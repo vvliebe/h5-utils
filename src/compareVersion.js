@@ -5,7 +5,7 @@
  */
 const compareVersion = (compare, beCompared) => {
  if (!beCompared) {
-   beCompared = window.navigator.userAgent.match(/Eleme\/([0-9]+)\.([0-9]+)/i);
+   beCompared = window.navigator.userAgent.match(/Eleme\/([0-9]+)\.([0-9]+)/i)
    if (!beCompared) return false;
  }
 

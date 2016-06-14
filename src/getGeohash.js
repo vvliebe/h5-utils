@@ -1,30 +1,30 @@
 const getGeohash = new Promise((resolve, reject) => {
   const getGeohashFromApp = () => {
     if (!window.hybridAPI) {
-      console.warn('please make sure the hybridAPI is existing when get geohash from app.');
-      return reject('hybridAPI is required.');
+      console.warn('please make sure the hybridAPI is existing when get geohash from app.')
+      return reject('hybridAPI is required.')
     }
 
     let timeout = setTimeout(() => {
-      reject('can\'t get geohash in any case.');
+      reject('can\'t get geohash in any case.')
     }, 5000);
 
     hybridAPI.getGlobalGeohash(geohash => {
-      clearTimeout(timeout);
-      resolve(Geohash.decode(geohash));
+      clearTimeout(timeout)
+      resolve(Geohash.decode(geohash))
     });
   };
 
-  const UrlToken = window.UParams && new UParams(location.href) || {};
+  const UrlToken = window.UParams && new UParams(location.href) || {}
   if (UrlToken.geohash) {
     try {
-      resolve(Geohash.decode(UrlToken.geohash));
+      resolve(Geohash.decode(UrlToken.geohash))
     } catch(error) {
-      getGeohashFromApp();
+      getGeohashFromApp()
     }
   } else {
-    getGeohashFromApp();
+    getGeohashFromApp()
   }
 });
 
-export default getGeohash;
+export default getGeohash

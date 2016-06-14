@@ -4,4 +4,4 @@ const resolveFetch = response => {
   return json.then(Promise.reject.bind(Promise))
 }
 
-export default resolveFetch;
+export default resolveFetch

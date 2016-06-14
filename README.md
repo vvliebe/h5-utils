@@ -5,7 +5,7 @@ common methods for eleme h5 project.
 npm install h5-utils --save
 ```
 
-# Publish 
+# Publish
 `npm publish` `h5-utils.js` is autobuild when package is published.
 
 # 强依赖
@@ -16,3 +16,6 @@ npm install h5-utils --save
 
 # test
 ...
+
+# Code
+- no semicolon

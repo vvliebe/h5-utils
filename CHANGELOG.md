@@ -1,8 +1,11 @@
+# 0.0.5
+Add: checkoutByApp method.
+
 # 0.0.4
 improve: compareVersion 里，如果没有被比较对象，默认返回 `false`
 
 # 0.0.3
-Fixed compareVersion bug.
+Fixed: compareVersion bug.
 
 # 0.0.2
 `getGeoHash` => `getGeohash`

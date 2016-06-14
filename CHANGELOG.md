@@ -1,3 +1,6 @@
+# 0.1.0
+getGeohash return geohash.
+
 # 0.0.5
 Add: checkoutByApp method.
 

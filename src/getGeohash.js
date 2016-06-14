@@ -11,14 +11,14 @@ const getGeohash = new Promise((resolve, reject) => {
 
     hybridAPI.getGlobalGeohash(geohash => {
       clearTimeout(timeout)
-      resolve(Geohash.decode(geohash))
+      resolve(geohash)
     });
   };
 
   const UrlToken = window.UParams && new UParams(location.href) || {}
   if (UrlToken.geohash) {
     try {
-      resolve(Geohash.decode(UrlToken.geohash))
+      resolve(UrlToken.geohash)
     } catch(error) {
       getGeohashFromApp()
     }

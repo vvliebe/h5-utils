@@ -5,8 +5,8 @@
  */
 const compareVersion = (compare, beCompared) => {
  if (!beCompared) {
-   beCompared = window.navigator.userAgent.match(/Eleme\/([0-9]+)\.([0-9]+)/i)
-   if (!beCompared) return false;
+   beCompared = (window.navigator.userAgent.match(/Eleme\/([\d|\.]+)/i) || [])[1]
+   if (!beCompared) return false
  }
 
  compare = compare.split('.')

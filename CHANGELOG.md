@@ -1,3 +1,12 @@
+# 0.1.6
+Add: getUrl method add `animation_type` param to control page animation type on eleme app.
+
+# 0.1.5
+Add: getUrl method. return corresponding url for browser or eleme app.
+
+# 0.1.4
+Fixed: compareVersion method bug.
+
 # 0.1.0
 getGeohash return geohash.
 

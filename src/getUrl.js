@@ -6,29 +6,21 @@
  * @return 完整的 url
  */
 
-// 检测 object 的 type
-const is = (object, type) => {
-  let truthType = Object.prototype.toString.call(object).slice(8, -1)
-  return new RegExp(truthType, 'i').test(type)
-}
-
 const getUrl = (url, param = {}, type = 'hash', animationType = 1) => {
   let result = ''
-  if (!is(param, 'Object')) console.warn('param must be an object.')
 
   for (var key in param) {
-    var value = param[key]
-
-    if (is(value, 'Array') || is(value, 'Object')) {
-      result += `&${key}=${encodeURIComponent(JSON.stringify(value))}`
+    let value = param[key]
+    if (typeof value === 'object' && value) {
+      result += `&${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(value))}`
     } else {
-      result += `&${key}=${value}`
+      result += `&${encodeURIComponent(key)}=${encodeURIComponent(value)}`
     }
   }
 
   result = `${url}${type === 'hash' ? '#' : '?'}${result.replace(/^&/, '')}`
 
-  // 如果在饿了么 APP 中，自动添加 schma
+  // 如果在饿了么 APP 中，自动添加 eleme 的 scheme
   if (/Eleme/.test(navigator.userAgent)) {
     result = `eleme://web?url=${encodeURIComponent(result)}&animation_type=${animationType}`
   }

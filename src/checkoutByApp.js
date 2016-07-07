@@ -11,7 +11,7 @@ export default ({ id, entities, callback }) => {
     add_foods: entities.map(({ id, quantity, specs }) => ({
       id,
       quantity,
-      specs,
+      specs: specs.map(spec => spec.value),
     })),
   })
 

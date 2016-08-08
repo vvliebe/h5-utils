@@ -27,11 +27,10 @@ const getNavigatorHash = key => {
 
 const getAPIHash = () => {
   $get(APIHOST + '/v1/cities?type=guess')
-    .then(json => {
-      userGeohash.restapi = window.Geohash.encode(json.latitude, json.longitude)
-    })
-    .catch(() => {
-    })
+  .then(json => {
+    userGeohash.restapi = window.Geohash.encode(json.latitude, json.longitude)
+  })
+  .catch(() => {})
 }
 
 const getGeohash = (timeout = 5000) => {
@@ -83,8 +82,10 @@ const getGeohash = (timeout = 5000) => {
       }
     })
 
-    const urlGeohash = new window.UParams().geohash
-    if (urlGeohash) return userGeohash.geohash = urlGeohash
+    if (window.UPrams) {
+      const urlGeohash = new window.UParams().geohash
+      if (urlGeohash) return userGeohash.geohash = urlGeohash
+    }
 
     isApp ? useAppMode() : useWebMode()
   })

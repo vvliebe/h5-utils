@@ -6,89 +6,106 @@
 
 import resolveFetch from './resolveFetch.js'
 
-const isApp = /Eleme/.test(navigator.userAgent)
-const APIHOST = `//${document.domain.replace(/^(h|h5)\./, 'm.')}/restapi`
+const APIHOST = `${location.origin.replace(/\:\/\/(h|h5)\./, '://m.')}/restapi`
+const APIURL = `${APIHOST}/v1/cities?type=guess`
 const $get = url => window.fetch(url).then(res => resolveFetch(res))
 
-let userGeohash
-
-const getAppHash = () => {
-  window.hybridAPI.getGlobalGeohash(geohash => {
-    if (geohash) userGeohash.geohash = geohash
+const wait = time => {
+  return new Promise(resolve => {
+    setTimeout(resolve, time)
   })
 }
 
-const getNavigatorHash = key => {
-  if (!navigator.geolocation) return
-  navigator.geolocation.getCurrentPosition(position => {
-    userGeohash[key] = window.Geohash.encode(position.coords.latitude, position.coords.longitude)
+const getAppHash = (timeout = 5000, interval = 500) => {
+  const tryOnce = () => {
+    return new Promise((resolve, reject) => {
+      window.hybridAPI.getGlobalGeohash(geohash => {
+        if (!geohash) return reject()
+        resolve(geohash)
+      })
+    })
+  }
+  return new Promise((resolve, reject) => {
+    let appHash = ''
+    let timmer = -1
+    let stop = () => {
+      clearInterval(timmer)
+    }
+    let loop = () => {
+      if (appHash) return stop()
+      tryOnce().then(hash => {
+        if (appHash) return
+        appHash = hash
+        stop()
+        resolve(hash)
+      })
+    }
+    timmer = setInterval(loop, interval)
+    loop()
+    wait(timeout).then(stop)
+  })
+}
+
+const getNavigatorHash = () => {
+  if (!navigator.geolocation) return Promise.reject()
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(position => {
+      resolve(window.Geohash.encode(position.coords.latitude, position.coords.longitude))
+    }, reject)
   })
 }
 
 const getAPIHash = () => {
-  $get(APIHOST + '/v1/cities?type=guess')
-  .then(json => {
-    userGeohash.restapi = window.Geohash.encode(json.latitude, json.longitude)
+  return $get(APIURL).then(coords => {
+    return window.Geohash.encode(coords.latitude, coords.longitude)
   })
-  .catch(() => {})
 }
 
 const getGeohash = (timeout = 5000) => {
+  let appHash = ''
+  let navigatorHash = ''
+  let apiHash = ''
   return new Promise((resolve, reject) => {
-    let isTrying = null
-
-    const clearTrying = window[isApp ? 'clearInterval' : 'clearTimeout'].bind(null, isTrying)
-
-    const useBestHash = () => {
-      clearTrying()
-
-      if (userGeohash.geohash) return
-      if (userGeohash.navigator) return userGeohash.geohash = userGeohash.navigator
-      if (userGeohash.restapi) return userGeohash.geohash = userGeohash.restapi
-
-      reject()
+    if (/Eleme/.test(navigator.userAgent)) {
+      getAppHash(timeout).then(hash => {
+        appHash = hash
+        resolve(hash)
+      }).catch(() => {
+        let hash = navigatorHash || apiHash
+        if (hash) return resolve(hash)
+        reject()
+      })
+      wait(timeout / 2).then(() => {
+        if (appHash) return
+        return getNavigatorHash().then(hash => {
+          navigatorHash = hash
+        })
+      }).catch(() => {})
+      getAPIHash().then(hash => {
+        apiHash = hash
+      }).catch(() => {})
+    } else {
+      let navigatorFailed = false
+      let apiFailed = false
+      getNavigatorHash().then(resolve).catch(() => {
+        if (apiHash) return resolve(apiHash)
+        if (apiFailed) reject()
+        navigatorFailed = true
+      })
+      getAPIHash().then(hash => {
+        apiHash = hash
+        if (navigatorFailed) return resolve(apiHash)
+      }).catch(() => {
+        if (navigatorFailed) reject()
+        apiFailed = true
+      })
+      wait(timeout).then(reject)
     }
-
-    const useAppMode = () => {
-      getAppHash()
-      isTrying = setInterval(getAppHash, 500)
-
-      setTimeout(useBestHash, timeout)
-      setTimeout(() => {
-        if (userGeohash.geohash) return
-        getNavigatorHash('navigator')
-        getAPIHash()
-      }, timeout / 2)
-    }
-
-    const useWebMode = () => {
-      isTrying = setTimeout(useBestHash, timeout)
-      getNavigatorHash('geohash')
-      getAPIHash()
-    }
-
-    let _geohash = ''
-
-    userGeohash = Object.create(null)
-    Object.defineProperty(userGeohash, 'geohash', {
-      get() {
-        return _geohash
-      },
-      set(value) {
-        if (!value) return
-        _geohash = value
-        clearTrying()
-        resolve(value)
-      }
-    })
-
-    if (window.UPrams) {
-      const urlGeohash = new window.UParams().geohash
-      if (urlGeohash) return userGeohash.geohash = urlGeohash
-    }
-
-    isApp ? useAppMode() : useWebMode()
   })
 }
+
+getGeohash.useApp = getAppHash
+getGeohash.useGeoAPI = getNavigatorHash
+getGeohash.useRestAPI = getAPIHash
 
 export default getGeohash

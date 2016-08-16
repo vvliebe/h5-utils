@@ -20,8 +20,10 @@ Global variable
 # 依赖
 - hyBridAPI
 
-# test
-...
+# usage
+`npm run build`
+`npm run dev`
+`npm run test`
 
 # Code
 - no semicolon

@@ -22,7 +22,7 @@ const compareVersion = (compare, beCompared) => {
    if (difference === 0) return
    result = difference > 0
  })
- return result
+ return !!result
 }
 
 export default compareVersion

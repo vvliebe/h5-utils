@@ -2,12 +2,32 @@
 import userAgent from './userAgent.js'
 
 const isApp = /Eleme/.test(navigator.userAgent)
+let historyCount = 0
+let hackUrl = url => {
+  window.history.pushState({}, '', url)
+  historyCount++
+}
+let resetHistory = (callback) => {
+  if (!historyCount) return callback()
+  window.history.go(-historyCount)
+  historyCount = 0
+  setTimeout(callback, 500) // 坑
+}
 
 describe('getGeohash', function () {
   this.timeout(6000)
   const getGeohash = Utils.default.getGeohash
 
   describe('function correctly', function () {
+    afterEach(resetHistory)
+    it('use parma', function () {
+      hackUrl('?geohash=parma')
+      expect(getGeohash.getParmaHash()).to.equal('parma')
+      hackUrl('?geohash=')
+      expect(getGeohash.getParmaHash()).to.equal('')
+      hackUrl('?!')
+      expect(getGeohash.getParmaHash()).to.equal('')
+    })
     it('use App', function () {
       if (!isApp) this.skip()
       return expect(getGeohash.useApp()).to.eventually.be.not.empty
@@ -27,13 +47,14 @@ describe('getGeohash', function () {
       getCurrentPosition: navigator.geolocation.getCurrentPosition,
       fetch: window.fetch,
     }
-    let reset = () => {
+    let reset = (done) => {
       window.hybridAPI.getGlobalGeohash = origin.getGlobalGeohash
       navigator.geolocation.getCurrentPosition = origin.getCurrentPosition
       window.fetch = origin.fetch
       userAgent.reset()
+      resetHistory(done)
     }
-    after(reset)
+    afterEach(reset)
     // hacks
     const hackApp = enable => {
       if (enable) {
@@ -88,7 +109,11 @@ describe('getGeohash', function () {
         })
       })
     }
-    it('App first', function () {
+    it('Parma first', function () {
+      hackUrl('?geohash=parma')
+      return expect(getGeohash()).to.eventually.equal('parma')
+    })
+    it('then APP', function () {
       let method = getGeohash.useApp
       return Promise.all([
         test(true, true, true, method),

@@ -1,7 +1,7 @@
 /*
  * 获取用户地址 Geohash
  * 依赖：HybridAPI Geohash.js Promise 以及 fetch
- * 优先级：HybridAPI > Navigator > restAPI
+ * 优先级：url?geohash=XXX > HybridAPI > Navigator > restAPI
  */
 
 import resolveFetch from './resolveFetch.js'
@@ -14,6 +14,11 @@ const wait = time => {
   return new Promise(resolve => {
     setTimeout(resolve, time)
   })
+}
+
+const getParmaHash = () => {
+  if (!window.UParams) return ''
+  return window.UParams().geohash || ''
 }
 
 const getAppHash = (timeout = 5000, interval = 500) => {
@@ -66,6 +71,8 @@ const getGeohash = (timeout = 5000) => {
   let navigatorHash = ''
   let apiHash = ''
   return new Promise((resolve, reject) => {
+    let hash = getParmaHash()
+    if (hash) return resolve(hash)
     if (/Eleme/.test(navigator.userAgent)) {
       getAppHash(timeout).then(hash => {
         appHash = hash
@@ -104,6 +111,7 @@ const getGeohash = (timeout = 5000) => {
   })
 }
 
+getGeohash.getParmaHash = getParmaHash
 getGeohash.useApp = getAppHash
 getGeohash.useGeoAPI = getNavigatorHash
 getGeohash.useRestAPI = getAPIHash

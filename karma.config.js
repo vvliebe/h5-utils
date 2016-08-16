@@ -18,6 +18,7 @@ module.exports = function (config) {
     frameworks: ['mocha', 'chai-as-promised', 'chai'],
     files: [
       'https://github.elemecdn.com/uglifyjs!YanagiEiichi/geohash.js/1.0.1/geohash.js',
+      'https://github.elemecdn.com/uglifyjs!YanagiEiichi/uparams/1.3.1/uparams.js',
       'https://github.elemecdn.com/uglifyjs!eleme/hybridAPI/0.3.0/hybrid-api.js',
       './h5-utils.js',
       './test/index.js',

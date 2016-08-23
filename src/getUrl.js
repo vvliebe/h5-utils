@@ -9,16 +9,19 @@
 const getUrl = (url, param = {}, type = 'hash', animationType = 1) => {
   let result = ''
 
-  for (var key in param) {
-    let value = param[key]
-    if (typeof value === 'object' && value) {
-      result += `&${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(value))}`
-    } else {
-      result += `&${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+  if (JSON.stringify(param) !== '{}') {
+    result = type === 'hash' ? '#' : '?'
+    for (var key in param) {
+      let value = param[key]
+      if (typeof value === 'object' && value) {
+        result += `${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(value))}&`
+      } else {
+        result += `${encodeURIComponent(key)}=${encodeURIComponent(value)}&`
+      }
     }
   }
 
-  result = `${url}${type === 'hash' ? '#' : '?'}${result.replace(/^&/, '')}`
+  result = `${url}${result.replace(/&$/, '')}`
 
   // 如果在饿了么 APP 中，自动添加 eleme 的 scheme
   if (/Eleme/.test(navigator.userAgent)) {

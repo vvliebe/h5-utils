@@ -76,6 +76,12 @@ describe('getUrl', function () {
       let query = URL.parse(getUrl(url, param, 'search'), true).query
       expect(query).to.deep.equal(stringyParam)
     })
+    it('should return no hash', function () {
+      expect(getUrl(url)).to.equal(url)
+    })
+    it('should return with default hash', function () {
+      expect(getUrl(url + '#default')).to.equal(url + '#default')
+    });
   })
 
   describe('when called in Eleme App', function () {

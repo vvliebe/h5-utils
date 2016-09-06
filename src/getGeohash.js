@@ -6,7 +6,7 @@
 
 import resolveFetch from './resolveFetch.js'
 
-const APIHOST = `${location.origin.replace(/\:\/\/(h|h5)\./, '://m.')}/restapi`
+const APIHOST = `${location.origin.replace(/\:\/\/(h|h5)\./, '://mainsite-restapi.')}`
 const APIURL = `${APIHOST}/v1/cities?type=guess`
 const $get = url => window.fetch(url).then(res => resolveFetch(res))
 

@@ -70,7 +70,7 @@ const getAPIHash = () => {
   })
 }
 
-const browserMode = (timeout = 5000) => {
+const browserMode = (timeout) => {
   // 通过原生 API 获取失败后,看下有没有 apiHash 没有的话直接 reject()
   return new Promise((resolve, reject) => {
     getNavigatorHash(timeout)
@@ -78,22 +78,24 @@ const browserMode = (timeout = 5000) => {
     .catch(() => getAPIHash())
     .then(resolve)
     .catch(reject)
+
+    setTimeout(reject, timeout)
   })
 }
 
-const appMode = (timeout = 5000) => {
+const appMode = (timeout) => {
   return new Promise((resolve) => {
-    getAppHash(timeout)
+    getAppHash(timeout * 2 / 3)
     .then(hash => {
       resolve(hash)
     })
     .catch(() => {
-      return browserMode(2500)
+      return browserMode(timeout * 1 / 3)
     })
   })
 }
 
-const getGeohash = (timeout = 5000) => {
+const getGeohash = (timeout = 10000) => {
   // 优先使用 URL 中传来的 geohash 参数
   let hash = getParamHash()
   if (hash) {

@@ -8,7 +8,7 @@ import resolveFetch from './resolveFetch.js'
 
 const APIHOST = `${location.origin.replace(/\:\/\/(h|h5)\./, '://mainsite-restapi.')}`
 const APIURL = `${APIHOST}/v1/cities?type=guess`
-const $get = url => window.fetch(url).then(res => resolveFetch(res))
+const $get = url => window.fetch(url).then(resolveFetch)
 
 const wait = time => {
   return new Promise(resolve => {
@@ -16,7 +16,7 @@ const wait = time => {
   })
 }
 
-const getParmaHash = () => {
+const getParamHash = () => {
   if (!window.UParams) return ''
   return window.UParams().geohash || ''
 }
@@ -32,9 +32,9 @@ const getAppHash = (timeout = 5000, interval = 500) => {
   }
   return new Promise((resolve, reject) => {
     let appHash = ''
-    let timmer = -1
+    let timer = -1
     let stop = () => {
-      clearInterval(timmer)
+      clearInterval(timer)
     }
     let loop = () => {
       if (appHash) return stop()
@@ -45,18 +45,22 @@ const getAppHash = (timeout = 5000, interval = 500) => {
         resolve(hash)
       })
     }
-    timmer = setInterval(loop, interval)
+    timer = setInterval(loop, interval)
     loop()
     wait(timeout).then(stop)
   })
 }
 
-const getNavigatorHash = () => {
+const getNavigatorHash = (timeout = 5000) => {
+  // Read more info: https://developer.mozilla.org/zh-CN/docs/Web/API/Geolocation/getCurrentPosition
   if (!navigator.geolocation) return Promise.reject()
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(position => {
       resolve(window.Geohash.encode(position.coords.latitude, position.coords.longitude))
-    }, reject)
+    }, reject, {
+      timeout,
+      maximumAge: 10000,
+    })
   })
 }
 
@@ -66,52 +70,44 @@ const getAPIHash = () => {
   })
 }
 
-const getGeohash = (timeout = 5000) => {
-  let appHash = ''
-  let navigatorHash = ''
-  let apiHash = ''
+const browserMode = (timeout = 5000) => {
+  // 通过原生 API 获取失败后,看下有没有 apiHash 没有的话直接 reject()
   return new Promise((resolve, reject) => {
-    let hash = getParmaHash()
-    if (hash) return resolve(hash)
-    if (/Eleme/.test(navigator.userAgent)) {
-      getAppHash(timeout).then(hash => {
-        appHash = hash
-        resolve(hash)
-      }).catch(() => {
-        let hash = navigatorHash || apiHash
-        if (hash) return resolve(hash)
-        reject()
-      })
-      wait(timeout / 2).then(() => {
-        if (appHash) return
-        return getNavigatorHash().then(hash => {
-          navigatorHash = hash
-        })
-      }).catch(() => {})
-      getAPIHash().then(hash => {
-        apiHash = hash
-      }).catch(() => {})
-    } else {
-      let navigatorFailed = false
-      let apiFailed = false
-      getNavigatorHash().then(resolve).catch(() => {
-        if (apiHash) return resolve(apiHash)
-        if (apiFailed) reject()
-        navigatorFailed = true
-      })
-      getAPIHash().then(hash => {
-        apiHash = hash
-        if (navigatorFailed) return resolve(apiHash)
-      }).catch(() => {
-        if (navigatorFailed) reject()
-        apiFailed = true
-      })
-      wait(timeout).then(reject)
-    }
+    getNavigatorHash(timeout)
+    .then(resolve)
+    .catch(() => getAPIHash())
+    .then(resolve)
+    .catch(reject)
   })
 }
 
-getGeohash.getParmaHash = getParmaHash
+const appMode = (timeout = 5000) => {
+  return new Promise((resolve) => {
+    getAppHash(timeout)
+    .then(hash => {
+      resolve(hash)
+    })
+    .catch(() => {
+      return browserMode(2500)
+    })
+  })
+}
+
+const getGeohash = (timeout = 5000) => {
+  // 优先使用 URL 中传来的 geohash 参数
+  let hash = getParamHash()
+  if (hash) {
+    return Promise.resolve(hash)
+  }
+
+  if (/Eleme/.test(navigator.userAgent)) {
+    return appMode(timeout)
+  } else {
+    return browserMode(timeout)
+  }
+}
+
+getGeohash.getParamHash = getParamHash
 getGeohash.useApp = getAppHash
 getGeohash.useGeoAPI = getNavigatorHash
 getGeohash.useRestAPI = getAPIHash

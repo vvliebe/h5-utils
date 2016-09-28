@@ -22,11 +22,11 @@ describe('getGeohash', function () {
     afterEach(resetHistory)
     it('use parma', function () {
       hackUrl('?geohash=parma')
-      expect(getGeohash.getParmaHash()).to.equal('parma')
+      expect(getGeohash.getParamHash()).to.equal('parma')
       hackUrl('?geohash=')
-      expect(getGeohash.getParmaHash()).to.equal('')
+      expect(getGeohash.getParamHash()).to.equal('')
       hackUrl('?!')
-      expect(getGeohash.getParmaHash()).to.equal('')
+      expect(getGeohash.getParamHash()).to.equal('')
     })
     it('use App', function () {
       if (!isApp) this.skip()

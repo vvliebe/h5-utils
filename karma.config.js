@@ -37,8 +37,8 @@ module.exports = function (config) {
     singleRun: false,
     concurrency: Infinity,
     proxies: {
-      '/restapi': {
-        'target': 'http://m.ele.me/restapi',
+      '/v1/cities': {
+        'target': 'http://mainsite-restapi.ele.me/v1/cities',
         'changeOrigin': true
       },
     },

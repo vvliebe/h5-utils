@@ -4,6 +4,7 @@ import paramToString from './paramToString.js'
 import resolveFetch from './resolveFetch.js'
 import checkoutByApp from './checkoutByApp.js'
 import getUrl from './getUrl.js'
+import expiredLocalStorage from './expired-localstorage'
 
 export default {
   getGeohash,
@@ -12,4 +13,5 @@ export default {
   resolveFetch,
   checkoutByApp,
   getUrl,
+  expiredLocalStorage,
 }

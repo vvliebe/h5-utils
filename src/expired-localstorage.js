@@ -21,7 +21,13 @@ export default expiredLocalStorage = {
     if (expiredDay) {
       storedObject.expired = Date.now() + expiredDay * 60 * 60 * 1000
     }
+
     localStorage.setItem(key, JSON.stringify(storedObject))
+
+    return {
+      key,
+      value: JSON.stringify(storedObject)
+    }
   },
   /**
    * 返回 localStorage 的值，并返回有没有过期的布尔值
@@ -29,9 +35,15 @@ export default expiredLocalStorage = {
    * @return { value: null, expired: Boolean }
    */
   get(key) {
-    const storedObject = JSON.parse(localStorage.getItem(key))
+    let storedObject
+    try {
+      storedObject = JSON.parse(localStorage.getItem(key))
+    } catch(error) {
+      throw error
+    }
+
     if (!storedObject) {
-      console.warn(`The key: ${key} you want are not found in localStorage`)
+      console.error(`The key: ${key} you want are not found in localStorage`)
       return
     }
 

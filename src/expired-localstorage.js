@@ -43,8 +43,7 @@ export default expiredLocalStorage = {
     }
 
     if (!storedObject) {
-      console.error(`The key: ${key} you want are not found in localStorage`)
-      return
+      throw `The key: ${key} you want are not found in localStorage`
     }
 
     const expired = Date.now() > new Date(storedObject.expired).getTime()

@@ -5,6 +5,7 @@ import resolveFetch from './resolveFetch.js'
 import checkoutByApp from './checkoutByApp.js'
 import getUrl from './getUrl.js'
 import expiredLocalStorage from './expired-localstorage'
+console.log(expiredLocalStorage)
 
 export default {
   getGeohash,

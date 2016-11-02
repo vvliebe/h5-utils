@@ -1,7 +1,7 @@
 /*
 * 添加 / 获取可以过期的 localStorage
 * */
-export default expiredLocalStorage = {
+export default {
   /**
    * @param key {String} - localStorage 中的 key 值
    * @param value {String} - localStroage 中的 value 值

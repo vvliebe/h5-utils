@@ -41,6 +41,5 @@ export default ({ id, entities, callback }) => {
   }
 
   // connect to APP checkout page.
-  alert(JSON.stringify(cartOperations))
   location.href = `eleme://checkout?restaurant_id=${id}&cart_operations=${JSON.stringify(cartOperations)}`
 }

@@ -5,15 +5,28 @@
  * @param {Function} arguments.callback - 下单成功后 APP 会调用这个方法。比如这个 Function 的作用是用来清空本地购物车
  */
 
+import compareVersion from './compareVersion'
+
 export default ({ id, entities, callback }) => {
-  const cart_operations = JSON.stringify({
+  let cartOperations = {
     clear_cart: true,
-    add_foods: entities.map(({ id, quantity, specs }) => ({
+  }
+  // App version >= 7.2 时，加了多属性规则。参数有变化
+  if (!compareVersion('7.2')) {
+    cartOperations.add_foods = entities
+    .map(({ id, quantity, specs, attrs }) => ({
+      id,
+      quantity,
+      spec: specs,
+      attrs: attrs,
+    }))
+  } else {
+    cartOperations.add_foods = entities.map(({ id, quantity, specs }) => ({
       id,
       quantity,
       specs: specs.map(spec => spec.value),
-    })),
-  })
+    }))
+  }
 
   try {
     let bridge = window.WebViewJavascriptBridge
@@ -28,7 +41,6 @@ export default ({ id, entities, callback }) => {
   }
 
   // connect to APP checkout page.
-  setTimeout(() => {
-    location.href = `eleme://checkout?restaurant_id=${id}&cart_operations=${cart_operations}`
-  }, 100)
+  alert(JSON.stringify(cartOperations))
+  location.href = `eleme://checkout?restaurant_id=${id}&cart_operations=${JSON.stringify(cartOperations)}`
 }

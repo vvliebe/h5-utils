@@ -1,7 +1,7 @@
 /**
  * @param {String} compare - 比较版本
- * @param {String} beCompared 被比较版本
- * @returns {Boolean} - 被比较版本是否比比较版本新
+ * @param {String} beCompared 被比较版本 - 默认为当前 APP 版本
+ * @returns {Boolean} - 比较版本是否比被比较版本新
  */
 const compareVersion = (compare, beCompared) => {
  if (!beCompared) {

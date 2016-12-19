@@ -17,7 +17,7 @@ export default ({ id, entities, callback }) => {
     .map(({ id, quantity, specs, attrs }) => ({
       id,
       quantity,
-      spec: specs,
+      specs: specs,
       attrs: attrs,
     }))
   } else {

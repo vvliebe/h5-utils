@@ -14,8 +14,9 @@ export default ({ id, entities, callback }) => {
   // App version >= 7.2 时，加了多属性规则。参数有变化
   if (!compareVersion('7.2')) {
     cartOperations.add_foods = entities
-    .map(({ id, quantity, specs, attrs }) => ({
+    .map(({ id, sku_id, quantity, specs, attrs }) => ({
       id,
+      sku_id: sku_id || '',
       quantity,
       specs: specs,
       attrs: attrs,

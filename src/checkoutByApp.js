@@ -29,18 +29,6 @@ export default ({ id, entities, callback }) => {
     }))
   }
 
-  try {
-    let bridge = window.WebViewJavascriptBridge
-    if (!bridge) return
-    if (bridge.init && !bridge.inited) {
-      bridge.init()
-      bridge.inited = true
-    }
-    bridge.registerHandler('clearCart', callback)
-  } catch (error) {
-    throw JSON.stringify(error)
-  }
-
   // connect to APP checkout page.
   location.href = `eleme://checkout?restaurant_id=${id}&cart_operations=${JSON.stringify(cartOperations)}`
 }

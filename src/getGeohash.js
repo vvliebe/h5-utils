@@ -31,7 +31,7 @@ const getAppHash = (timeout = 5000, interval = 100) => {
 
   return new Promise((resolve, reject) => {
     if (!window.hybridAPI) {
-      reject()
+      return reject()
     }
 
     let loop = () => {
@@ -89,7 +89,7 @@ const appMode = (timeout) => {
   return new Promise((resolve, reject) => {
     getAppHash(timeout * 2 / 3)
     .then(resolve)
-    .catch(browserMode(timeout * 1 / 3))
+    .catch(() => browserMode(timeout * 1 / 3))
     .catch(reject)
   })
 }

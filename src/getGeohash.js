@@ -41,7 +41,7 @@ const getAppHash = (timeout = 5000, interval = 100) => {
         resolve(hash)
       })
     }
-    
+
     intervalTimer = setInterval(loop, interval)
     loop()
 
@@ -86,10 +86,11 @@ const browserMode = (timeout) => {
 }
 
 const appMode = (timeout) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     getAppHash(timeout * 2 / 3)
-    .then(reslove)
+    .then(resolve)
     .catch(browserMode(timeout * 1 / 3))
+    .catch(reject)
   })
 }
 

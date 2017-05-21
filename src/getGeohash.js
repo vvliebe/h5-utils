@@ -6,8 +6,9 @@
 
 import resolveFetch from './resolveFetch.js'
 
-const APIHOST = `${location.origin.replace(/\:\/\/(h|h5)\./, '://mainsite-restapi.')}`
-const APIURL = `${APIHOST}/v1/cities?type=guess`
+const API_PREFIX = /opensite/.test(document.domain) ? 'opensite-restapi' : 'mainsite-restapi'
+const APIHOST = location.origin.replace(/\:\/\/(h|h5|opensite)\./, `://${API_PREFIX}.`)
+const APIURL = `${APIHOST}/shopping/v1/cities/guess`
 const $get = url => window.fetch(url).then(resolveFetch)
 
 const wait = time => {
@@ -21,33 +22,33 @@ const getParamHash = () => {
   return window.UParams().geohash || ''
 }
 
-const getAppHash = (timeout = 5000, interval = 500) => {
-  const tryOnce = () => {
-    return new Promise((resolve, reject) => {
-      window.hybridAPI.getGlobalGeohash(geohash => {
-        if (!geohash) return reject()
-        resolve(geohash)
-      })
-    })
+const getAppHash = (timeout = 5000, interval = 100) => {
+  let intervalTimer = null
+
+  const stop = () => {
+    clearInterval(intervalTimer)
   }
+
   return new Promise((resolve, reject) => {
-    let appHash = ''
-    let timer = -1
-    let stop = () => {
-      clearInterval(timer)
+    if (!window.hybridAPI) {
+      reject()
     }
+
     let loop = () => {
-      if (appHash) return stop()
-      tryOnce().then(hash => {
-        if (appHash) return
-        appHash = hash
+      window.hybridAPI.getGlobalGeohash(hash => {
+        if (!hash) return
         stop()
         resolve(hash)
       })
     }
-    timer = setInterval(loop, interval)
+    
+    intervalTimer = setInterval(loop, interval)
     loop()
-    wait(timeout).then(stop)
+
+    setTimeout(() => {
+      stop()
+      reject()
+    }, timeout)
   })
 }
 
@@ -65,8 +66,9 @@ const getNavigatorHash = (timeout = 5000) => {
 }
 
 const getAPIHash = () => {
-  return $get(APIURL).then(coords => {
-    return window.Geohash.encode(coords.latitude, coords.longitude)
+  return $get(APIURL)
+  .then(({ latitude, longitude }) => {
+    return window.Geohash.encode(latitude, longitude)
   })
 }
 
@@ -86,12 +88,8 @@ const browserMode = (timeout) => {
 const appMode = (timeout) => {
   return new Promise((resolve) => {
     getAppHash(timeout * 2 / 3)
-    .then(hash => {
-      resolve(hash)
-    })
-    .catch(() => {
-      return browserMode(timeout * 1 / 3)
-    })
+    .then(reslove)
+    .catch(browserMode(timeout * 1 / 3))
   })
 }
 
@@ -102,7 +100,7 @@ const getGeohash = (timeout = 10000) => {
     return Promise.resolve(hash)
   }
 
-  if (/Eleme/.test(navigator.userAgent)) {
+  if (/Eleme/i.test(navigator.userAgent)) {
     return appMode(timeout)
   } else {
     return browserMode(timeout)

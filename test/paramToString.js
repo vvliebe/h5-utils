@@ -10,8 +10,6 @@ describe('paramToString', function () {
       num: 233,
       truthy: true,
       falsy: false,
-      undef: undefined,
-      nul: null,
       zero: 0,
       space: 'I love\teleme\n.',
       special: '饿了么？お腹がすいたか？배고파?Голоден?\n\r~!@#$%^&*()_+=-`{}[]\\|;:\'"<>,./?',
@@ -43,8 +41,8 @@ describe('paramToString', function () {
     let str = paramToString(param)
     let url = `http://ele.me/index.html?${str}`
     let query = URL.parse(url, true).query
-    // console.log(JSON.stringify(query) + ' query')
-    // console.log(JSON.stringify(cookedParam) + ' cooked')
+    console.log(JSON.stringify(query) + ' query')
+    console.log(JSON.stringify(cookedParam) + ' cooked')
     expect(query).to.deep.equal(cookedParam)
   })
   it('should throw an error when param is not an object', function () {

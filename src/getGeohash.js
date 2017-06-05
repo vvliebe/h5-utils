@@ -9,7 +9,9 @@ import resolveFetch from './resolveFetch.js'
 const API_PREFIX = /opensite/.test(document.domain) ? 'opensite-restapi' : 'mainsite-restapi'
 const APIHOST = location.origin.replace(/\:\/\/(h|h5|opensite)\./, `://${API_PREFIX}.`)
 const APIURL = `${APIHOST}/shopping/v1/cities/guess`
-const $get = url => window.fetch(url).then(resolveFetch)
+const $get = url => window.fetch(url, {
+  credentials: 'include',
+}).then(resolveFetch)
 
 const wait = time => {
   return new Promise(resolve => {

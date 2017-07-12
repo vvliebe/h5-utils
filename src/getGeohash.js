@@ -6,8 +6,10 @@
 
 import resolveFetch from './resolveFetch.js'
 
-const API_PREFIX = /opensite/.test(document.domain) ? 'opensite-restapi' : 'mainsite-restapi'
-const APIHOST = location.origin.replace(/\:\/\/(h|h5|opensite)\./, `://${API_PREFIX}.`)
+const FROM_OPEN = /opensite/.test(document.domain)
+const APIHOST = FROM_OPEN
+  ? location.origin.replace(/\:\/\/opensite([-|.][^.]+)/,"://opensite-restapi$1")
+  : location.origin.replace(/\:\/\/(h5|h)\./, `://mainsite-restapi.`)
 const APIURL = `${APIHOST}/shopping/v1/cities/guess`
 const $get = url => window.fetch(url, {
   credentials: 'include',

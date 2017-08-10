@@ -1,7 +1,7 @@
 /*
  * 获取用户地址 Geohash
  * 依赖：HybridAPI Geohash.js Promise 以及 fetch
- * 优先级：url?geohash=XXX > HybridAPI > Navigator > restAPI
+ * 优先级：url?geohash=XXX > HybridAPI/AlipayJSAPI > Navigator > restAPI
  */
 
 import resolveFetch from './resolveFetch.js'
@@ -76,6 +76,33 @@ const getAPIHash = () => {
   })
 }
 
+const getAlipayHash = (timeout = 5000) => {
+  const isAlipayReady = window.AlipayJSBridge && window.AlipayJSBridge.call
+  const callBridge = (resolve, reject) => {
+    AlipayJSBridge.call('getLocation', {
+      requestType: 2,
+      timeout,
+    } , res => {
+      if (res.error) {
+        reject(res)
+        return
+      }
+      const geohash = window.Geohash.encode(res.latitude, res.longitude)
+      resolve(geohash)
+    })
+  }
+
+  return new Promise((resolve, reject) => {
+    if (isAlipayReady) {
+      callBridge(resolve, reject)
+    } else {
+      document.addEventListener('AlipayJSBridgeReady', () => {
+        callBridge(resolve, reject)
+      }, false)
+    }
+  })
+}
+
 const browserMode = (timeout) => {
   // 通过原生 API 获取失败后,看下有没有 apiHash 没有的话直接 reject()
   return new Promise((resolve, reject) => {
@@ -90,31 +117,38 @@ const browserMode = (timeout) => {
 }
 
 const appMode = (timeout) => {
-  return new Promise((resolve, reject) => {
-    getAppHash(timeout * 2 / 3)
-    .then(resolve)
+  return getAppHash(timeout * 2 / 3)
     .catch(() => browserMode(timeout * 1 / 3))
-    .catch(reject)
-  })
+}
+
+const alipayMode = (timeout) => {
+  return getAlipayHash(timeout * 2 / 3)
+    .catch(() => browserMode(timeout * 1 / 3))
 }
 
 const getGeohash = (timeout = 10000) => {
+  let source
   // 优先使用 URL 中传来的 geohash 参数
   let hash = getParamHash()
   if (hash) {
-    return Promise.resolve(hash)
+    source = Promise.resolve(hash)
   }
 
   if (/Eleme/i.test(navigator.userAgent)) {
-    return appMode(timeout)
+    source = appMode(timeout)
+  } else if (/AlipayClient/.test(navigator.userAgent)) {
+    source = alipayMode(timeout)
   } else {
-    return browserMode(timeout)
+    source = browserMode(timeout)
   }
+
+  return source
 }
 
 getGeohash.getParamHash = getParamHash
 getGeohash.useApp = getAppHash
 getGeohash.useGeoAPI = getNavigatorHash
 getGeohash.useRestAPI = getAPIHash
+getGeohash.useAlipay = getAlipayHash
 
 export default getGeohash

@@ -76,7 +76,7 @@ const getAPIHash = () => {
   })
 }
 
-const getAlipayHash = (timeout = 5000) => {
+const getAlipayHash = (timeout = 3000) => {
   const isAlipayReady = window.AlipayJSBridge && window.AlipayJSBridge.call
   const callBridge = (resolve, reject) => {
     AlipayJSBridge.call('getLocation', {
@@ -93,11 +93,18 @@ const getAlipayHash = (timeout = 5000) => {
   }
 
   return new Promise((resolve, reject) => {
+    // 手动加一个定时器避免事件假死
+    let timer = setTimeout(() => {
+      reject()
+    }, timeout)
+
     if (isAlipayReady) {
       callBridge(resolve, reject)
+      clearTimeout(timer)
     } else {
       document.addEventListener('AlipayJSBridgeReady', () => {
         callBridge(resolve, reject)
+        clearTimeout(timer)
       }, false)
     }
   })
@@ -122,11 +129,11 @@ const appMode = (timeout) => {
 }
 
 const alipayMode = (timeout) => {
-  return getAlipayHash(timeout * 2 / 3)
-    .catch(() => browserMode(timeout * 1 / 3))
+  return getAlipayHash(timeout * 1 / 3)
+    .catch(() => browserMode(timeout * 2 / 3))
 }
 
-const getGeohash = (timeout = 10000) => {
+const getGeohash = (timeout = 9000) => {
   let source
   // 优先使用 URL 中传来的 geohash 参数
   let hash = getParamHash()

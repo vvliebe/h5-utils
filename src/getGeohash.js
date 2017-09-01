@@ -77,36 +77,15 @@ const getAPIHash = () => {
 }
 
 const getAlipayHash = (timeout = 3000) => {
-  const isAlipayReady = window.AlipayJSBridge && window.AlipayJSBridge.call
-  const callBridge = (resolve, reject) => {
-    AlipayJSBridge.call('getLocation', {
-      requestType: 2,
-      timeout,
-    } , res => {
-      if (res.error) {
-        reject(res)
-        return
-      }
-      const geohash = window.Geohash.encode(res.latitude, res.longitude)
-      resolve(geohash)
-    })
-  }
+  // 依赖alipay-jssdk
+  if (!window.ap) return Promise.reject()
 
-  return new Promise((resolve, reject) => {
-    // 手动加一个定时器避免事件假死
-    let timer = setTimeout(() => {
-      reject()
-    }, timeout)
-
-    if (isAlipayReady) {
-      callBridge(resolve, reject)
-      clearTimeout(timer)
-    } else {
-      document.addEventListener('AlipayJSBridgeReady', () => {
-        callBridge(resolve, reject)
-        clearTimeout(timer)
-      }, false)
-    }
+  return ap.getLocation({
+    timeout: Math.round(timeout / 1000),
+  })
+  .then(res => {
+    const geohash = window.Geohash.encode(res.latitude, res.longitude)
+    return geohash
   })
 }
 

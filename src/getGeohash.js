@@ -102,9 +102,9 @@ const browserMode = (timeout) => {
   })
 }
 
-const appMode = (timeout) => {
+const appMode = (timeout, browserModeDisabled) => {
   return getAppHash(timeout * 2 / 3)
-    .catch(() => browserMode(timeout * 1 / 3))
+    .catch(() => browserModeDisabled ? Promise.reject() : browserMode(timeout * 1 / 3))
 }
 
 const alipayMode = (timeout) => {
@@ -112,16 +112,16 @@ const alipayMode = (timeout) => {
     .catch(() => browserMode(timeout * 2 / 3))
 }
 
-const getGeohash = (timeout = 9000) => {
+const getGeohash = (timeout = 9000, browserModeDisabled = true) => {
   let source
   // 优先使用 URL 中传来的 geohash 参数
   let hash = getParamHash()
   if (hash) {
-    source = Promise.resolve(hash)
+    return Promise.resolve(hash)
   }
 
   if (/Eleme/i.test(navigator.userAgent)) {
-    source = appMode(timeout)
+    source = appMode(timeout, browserModeDisabled)
   } else if (/AlipayClient/.test(navigator.userAgent)) {
     source = alipayMode(timeout)
   } else {

@@ -15,12 +15,6 @@ const $get = url => window.fetch(url, {
   credentials: 'include',
 }).then(resolveFetch)
 
-const wait = time => {
-  return new Promise(resolve => {
-    setTimeout(resolve, time)
-  })
-}
-
 const getParamHash = () => {
   if (!window.UParams) return ''
   return window.UParams().geohash || ''
@@ -98,7 +92,8 @@ const browserMode = (timeout) => {
     .then(resolve)
     .catch(reject)
 
-    setTimeout(reject, timeout)
+    // 给getAPIHash定位1s时间
+    setTimeout(() => { reject({ error: 'BROWSER_MODE_TIMEOUT' }) }, timeout + 1000)
   })
 }
 
@@ -113,13 +108,13 @@ const alipayMode = (timeout) => {
 }
 
 const getGeohash = (timeout = 9000, browserModeDisabled = true) => {
-  let source
   // 优先使用 URL 中传来的 geohash 参数
   let hash = getParamHash()
   if (hash) {
     return Promise.resolve(hash)
   }
 
+  let source
   if (/Eleme/i.test(navigator.userAgent)) {
     source = appMode(timeout, browserModeDisabled)
   } else if (/AlipayClient/.test(navigator.userAgent)) {

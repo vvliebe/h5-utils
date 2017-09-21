@@ -55,6 +55,11 @@ const getNavigatorHash = (timeout = 5000) => {
   if (!navigator.geolocation) return Promise.reject()
   return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(position => {
+      if (!position.coords.latitude) {
+        reject({
+          name: 'BROWSER_MODE_PERMISSON_FAILED'
+        })
+      }
       resolve(window.Geohash.encode(position.coords.latitude, position.coords.longitude))
     }, reject, {
       timeout,
